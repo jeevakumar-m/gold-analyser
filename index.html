@@ -1,18 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
+
+<body class="bg-gray-50 text-gray-800">
 <head>
   <meta charset="UTF-8">
-  <title>Metals & Crypto Analytics Dashboard</title>
+  <title>Gold & Silver Prices, News & Analytics Dashboard | Free & Open Source</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <!-- Meta Description & Keywords for SEO -->
+  <meta name="description" content="Track real-time gold & silver prices, latest news, AI-generated summaries, and interactive 5-year charts. Free, open-source metals analytics dashboard.">
+  <meta name="keywords" content="gold price, silver price, gold news, silver news, metal analytics, crypto dashboard, investment, financial analytics">
+  <meta name="author" content="Jeevakumar Moorthy">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png">
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:title" content="Gold & Silver Dashboard: Prices, News & Analytics">
+  <meta property="og:description" content="Track real-time gold & silver prices, AI news summaries, and interactive charts. Free & open-source.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://jeevakumar-m.github.io/gold-silver-dashboard/">
+  <meta property="og:image" content="https://your-image-link.png">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Gold & Silver Dashboard: Prices, News & Analytics">
+  <meta name="twitter:description" content="Track real-time gold & silver prices, AI news summaries, and interactive charts. Free & open-source.">
+  <meta name="twitter:image" content="https://your-image-link.png">
+
   <!-- TailwindCSS -->
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.3/dist/tailwind.min.css" rel="stylesheet">
-  <!-- Plotly.js -->
+
+  <!-- Plotly.js for Charts -->
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-  <!-- Transformers.js for AI summarization -->
+
+  <!-- Transformers.js for AI Summarization -->
   <script type="module" src="https://cdn.jsdelivr.net/npm/@xenova/transformers"></script>
+
+  <!-- Custom Styles -->
   <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-gray-50 text-gray-800">
 
   <!-- Header -->
   <header class="p-6 bg-white shadow">
