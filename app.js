@@ -122,6 +122,40 @@ async function renderNews(news) {
 }
 
 // ====================
+// Inject JSON-LD Structured Data for SEO
+// ====================
+function injectNewsJSONLD(news) {
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "itemListElement": news.map((item, index) => ({
+      "@type": "NewsArticle",
+      "position": index + 1,
+      "headline": item.title,
+      "url": item.link,
+      "datePublished": new Date().toISOString(),
+      "author": {
+        "@type": "Organization",
+        "name": "Gold & Silver Dashboard"
+      },
+      "description": item.summary || item.title
+    }))
+  };
+
+  // Remove existing JSON-LD if any
+  const existing = document.getElementById("json-ld-news");
+  if (existing) existing.remove();
+
+  // Create new script tag
+  const script = document.createElement("script");
+  script.type = "application/ld+json";
+  script.id = "json-ld-news";
+  script.text = JSON.stringify(structuredData, null, 2);
+  document.head.appendChild(script);
+}
+
+
+// ====================
 // Event Listeners
 // ====================
 document.getElementById("refresh").addEventListener("click", fe
