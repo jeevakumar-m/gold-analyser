@@ -3,23 +3,26 @@ const refreshBtn = document.getElementById("refresh");
 let metalsData = null;
 let priceChart = null;
 
-// Fetch metals + news data
+// Wait for DOM
+window.onload = () => { fetchData(); };
+
+// Fetch metals + news
 async function fetchData() {
   try {
     metalsData = await fetch('data/metals.json').then(r=>r.json());
     metalsData.news = await fetch('data/news.json').then(r=>r.json());
     await fetchForexRates();
     renderDashboard();
-  } catch(e){ console.error(e); }
+  } catch(e){ console.error("Failed to fetch data:", e); }
 }
 
-// Fetch latest forex rates
+// Forex rates
 async function fetchForexRates(){
   try{
     const res = await fetch('https://api.exchangerate.host/latest?base=USD&symbols=INR,EUR,GBP,JPY');
     const data = await res.json();
     metalsData.rates = { USD:1, ...data.rates };
-  } catch(e){ console.error(e); }
+  } catch(e){ console.error("Forex fetch failed:", e); }
 }
 
 // Convert USD to selected currency
@@ -40,6 +43,7 @@ function renderDashboard(){
 function renderPriceCards(){
   const container = document.getElementById("cards-container");
   container.innerHTML = "";
+
   ["gold","silver"].forEach(metal=>{
     const prices = metalsData[metal];
     const latest = convert(prices[prices.length-1]);
@@ -65,7 +69,7 @@ function renderPriceCards(){
   });
 }
 
-// Main 5-Year Chart
+// 5-Year Chart
 function renderMainChart(){
   const labels = metalsData.gold.map((_,i)=>{
     const d = new Date();
@@ -143,6 +147,3 @@ function renderNews(){
 // Events
 currencySelect.addEventListener("change", renderDashboard);
 refreshBtn.addEventListener("click", fetchData);
-
-// Load
-fetchData();
