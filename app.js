@@ -1,149 +1,127 @@
-const currencySelect = document.getElementById("currency");
-const refreshBtn = document.getElementById("refresh");
+// ====================
+// Global Variables
+// ====================
 let metalsData = null;
-let priceChart = null;
+let currencyRates = null;
+let summarizer = null;
 
-// Wait for DOM
-window.onload = () => { fetchData(); };
+// ====================
+// Initialize AI Summarizer
+// ====================
+async function initSummarizer() {
+  summarizer = await window.xenova.pipeline("summarization");
+  console.log("✅ Summarizer loaded");
+}
 
-// Fetch metals + news
+// ====================
+// Fetch Metals & News Data
+// ====================
 async function fetchData() {
   try {
-    metalsData = await fetch('data/metals.json').then(r=>r.json());
-    metalsData.news = await fetch('data/news.json').then(r=>r.json());
-    await fetchForexRates();
-    renderDashboard();
-  } catch(e){ console.error("Failed to fetch data:", e); }
+    const res = await fetch("data/metals.json");
+    metalsData = await res.json();
+    currencyRates = metalsData.rates;
+
+    const newsRes = await fetch("data/news.json");
+    const news = await newsRes.json();
+    renderNews(news);
+    renderPriceCards();
+    renderChart();
+  } catch (e) {
+    console.error("Failed to fetch data", e);
+  }
 }
 
-// Forex rates
-async function fetchForexRates(){
-  try{
-    const res = await fetch('https://api.exchangerate.host/latest?base=USD&symbols=INR,EUR,GBP,JPY');
-    const data = await res.json();
-    metalsData.rates = { USD:1, ...data.rates };
-  } catch(e){ console.error("Forex fetch failed:", e); }
-}
-
-// Convert USD to selected currency
-function convert(priceUSD){
-  const rate = metalsData.rates[currencySelect.value] || 1;
-  return (priceUSD*rate).toFixed(2);
-}
-
-// Render full dashboard
-function renderDashboard(){
-  renderPriceCards();
-  renderMainChart();
-  renderAIInsights();
-  renderNews();
-}
-
-// Price Cards
-function renderPriceCards(){
-  const container = document.getElementById("cards-container");
+// ====================
+// Render Price Cards
+// ====================
+function renderPriceCards() {
+  const container = document.getElementById("price-cards");
   container.innerHTML = "";
 
-  ["gold","silver"].forEach(metal=>{
-    const prices = metalsData[metal];
-    const latest = convert(prices[prices.length-1]);
-    const prev = convert(prices[prices.length-2]);
-    const diff = (latest-prev).toFixed(2);
-    const pct = ((diff/prev)*100).toFixed(2);
-    const trend = diff>0?"positive":diff<0?"negative":"neutral";
+  const currency = document.getElementById("currency").value;
+  for (let metal of Object.keys(metalsData)) {
+    if (metal === "rates") continue;
+    const priceUSD = metalsData[metal].slice(-1)[0];
+    const convertedPrice = (priceUSD * (currencyRates[currency] || 1)).toFixed(2);
 
     const card = document.createElement("div");
-    card.className="card";
-    card.innerHTML=`
-      <h2>${metal.toUpperCase()}</h2>
-      <p class="price ${trend}">${latest} ${currencySelect.value} <span class="change">${pct}%</span></p>
-      <canvas id="${metal}-sparkline" height="50"></canvas>
+    card.className = "p-4 bg-white shadow rounded";
+    card.innerHTML = `
+      <h3 class="font-bold text-lg">${metal.toUpperCase()}</h3>
+      <p class="text-2xl">${convertedPrice} ${currency}</p>
     `;
     container.appendChild(card);
+  }
+}
 
-    new Chart(document.getElementById(`${metal}-sparkline`), {
-      type:'line',
-      data:{ labels:prices.map((_,i)=>i+1), datasets:[{ data:prices.map(p=>convert(p)), borderColor:trend==="positive"?"#28a745":trend==="negative"?"#dc3545":"#6c757d", fill:false, tension:0.2, pointRadius:0 }] },
-      options:{ plugins:{legend:{display:false}}, scales:{x:{display:false},y:{display:false}} }
+// ====================
+// Render 5-Year Chart
+// ====================
+function renderChart() {
+  const currency = document.getElementById("currency").value;
+  const traces = [];
+
+  for (let metal of Object.keys(metalsData)) {
+    if (metal === "rates") continue;
+    const pricesUSD = metalsData[metal];
+    const prices = pricesUSD.map(p => p * (currencyRates[currency] || 1));
+
+    traces.push({
+      y: prices,
+      name: metal.toUpperCase(),
+      type: 'scatter'
     });
-  });
+  }
+
+  Plotly.newPlot("priceChart", traces, {margin:{t:20}});
 }
 
-// 5-Year Chart
-function renderMainChart(){
-  const labels = metalsData.gold.map((_,i)=>{
-    const d = new Date();
-    d.setFullYear(d.getFullYear()-5);
-    d.setDate(d.getDate()+i);
-    return d;
-  });
+// ====================
+// Portfolio Calculator
+// ====================
+function calcPortfolio() {
+  const amt = parseFloat(document.getElementById("invest-amt").value);
+  const metal = document.getElementById("invest-metal").value;
+  const currency = document.getElementById("currency").value;
+  if (!amt || !metal || !metalsData) return;
 
-  const ctx = document.getElementById("priceChart").getContext("2d");
-  if(priceChart) priceChart.destroy();
+  const priceUSD = metalsData[metal].slice(-1)[0];
+  const convertedPrice = priceUSD * (currencyRates[currency] || 1);
+  const units = (amt / convertedPrice).toFixed(4);
 
-  priceChart = new Chart(ctx,{
-    type:'line',
-    data:{
-      labels: labels,
-      datasets:[
-        { label:'Gold', data:metalsData.gold.map(p=>convert(p)), borderColor:'#FFD700', fill:false, tension:0.2 },
-        { label:'Silver', data:metalsData.silver.map(p=>convert(p)), borderColor:'#C0C0C0', fill:false, tension:0.2 }
-      ]
-    },
-    options:{
-      responsive:true,
-      plugins:{
-        legend:{position:'top'},
-        zoom:{ pan:{enabled:true,mode:'x'}, zoom:{wheel:{enabled:true}, pinch:{enabled:true}, drag:{enabled:false}, mode:'x'} }
-      },
-      scales:{ x:{type:'time', time:{unit:'month'}} }
+  document.getElementById("portfolio-result").innerText = `You could buy ${units} units of ${metal.toUpperCase()} at current price (${convertedPrice.toFixed(2)} ${currency})`;
+}
+
+// ====================
+// Render AI Summarized News
+// ====================
+async function renderNews(news) {
+  const ul = document.getElementById("news-list");
+  ul.innerHTML = "";
+
+  for (let item of news) {
+    let summary = item.summary || item.title;
+    try {
+      if (summarizer) {
+        const result = await summarizer(item.title, { max_length: 25 });
+        summary = result[0].summary_text;
+      }
+    } catch (e) {
+      summary = item.title;
     }
-  });
-}
 
-// AI Insights
-function renderAIInsights(){
-  const list = document.getElementById("insights-list");
-  list.innerHTML="";
-  ["gold","silver"].forEach(metal=>{
-    const prices = metalsData[metal];
-    const trend = prices[prices.length-1]>prices[0]?"upward 🚀":prices[prices.length-1]<prices[0]?"downward 📉":"stable →";
-    const pctChange = ((prices[prices.length-1]-prices[0])/prices[0]*100).toFixed(2);
     const li = document.createElement("li");
-    li.textContent = `${metal.toUpperCase()} 5-year change: ${pctChange}% (${trend})`;
-    list.appendChild(li);
-  });
-
-  const corr = correlation(metalsData.gold, metalsData.silver).toFixed(2);
-  const li = document.createElement("li");
-  li.textContent = `Gold & Silver correlation: ${corr}`;
-  list.appendChild(li);
+    li.className = "p-2 bg-white shadow rounded";
+    li.innerHTML = `
+      <a href="${item.link}" target="_blank" class="font-semibold text-blue-600 hover:underline">${item.title}</a>
+      <p class="text-gray-600 text-sm mt-1">${summary}</p>
+    `;
+    ul.appendChild(li);
+  }
 }
 
-function correlation(x,y){
-  const n=x.length;
-  const avgX=x.reduce((a,b)=>a+b,0)/n;
-  const avgY=y.reduce((a,b)=>a+b,0)/n;
-  const num = x.map((v,i)=> (v-avgX)*(y[i]-avgY)).reduce((a,b)=>a+b,0);
-  const den = Math.sqrt(x.map(v=> (v-avgX)**2).reduce((a,b)=>a+b,0) * y.map(v=> (v-avgY)**2).reduce((a,b)=>a+b,0));
-  return num/den;
-}
-
-// News Section
-function renderNews(){
-  const newsContainer = document.getElementById("news-list");
-  newsContainer.innerHTML="";
-  if(!metalsData.news) return;
-  metalsData.news.forEach(item=>{
-    let sentiment="➡️";
-    if(/rise|gain|bull/i.test(item.title)) sentiment="📈";
-    if(/fall|drop|bear/i.test(item.title)) sentiment="📉";
-    const li = document.createElement("li");
-    li.innerHTML=`${sentiment} <a href="${item.link}" target="_blank">${item.title}</a>`;
-    newsContainer.appendChild(li);
-  });
-}
-
-// Events
-currencySelect.addEventListener("change", renderDashboard);
-refreshBtn.addEventListener("click", fetchData);
+// ====================
+// Event Listeners
+// ====================
+document.getElementById("refresh").addEventListener("click", fe
