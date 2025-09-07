@@ -68,7 +68,7 @@ button:hover {
   transform: translateY(-5px);
 }
 
-.card h2 {
+.card h2, .card h3 {
   margin: 0;
   font-size: 1.2rem;
 }
@@ -87,15 +87,23 @@ button:hover {
 .price.negative .change { color: #dc3545; }
 .price.neutral .change { color: #6c757d; }
 
-#ai-insights ul, #news-list {
+#ai-insights ul, #news-list, #top-insights-list {
   list-style: none;
   padding: 0;
 }
 
-#ai-insights li, #news-list li {
+#ai-insights li, #news-list li, #top-insights-list li {
   background: white;
   margin: 8px 20px;
   padding: 12px;
   border-radius: 8px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+#weekly-summary h2, #ai-insights h2, #top-insights h2 { 
+  margin-left: 20px; 
+}
+
+.card canvas { 
+  margin-top: 10px; 
 }
