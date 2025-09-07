@@ -1,27 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Metals Analytics Dashboard</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  
+  <meta charset="UTF-8">
+  <title>Metals Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 
-  <!-- Stylesheet -->
-  <link rel="stylesheet" href="style.css" />
+  <!-- CSS -->
+  <link rel="stylesheet" href="style.css">
 
   <!-- Chart.js + Luxon + Zoom -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
-
 </head>
 <body>
   <header>
-    <h1>📊 Metals Analytics Dashboard</h1>
-    <p class="subtitle">Gold & Silver prices, 5-year trends, AI insights & news — 100% free</p>
+    <h1>Metals Analytics Dashboard</h1>
+    <p>Gold & Silver prices, news, AI insights — Free & Open Source</p>
   </header>
 
   <main>
@@ -34,25 +33,23 @@
         <option value="GBP">GBP</option>
         <option value="JPY">JPY</option>
       </select>
-      <button id="refresh">Refresh Data</button>
+      <button id="refresh">Refresh</button>
     </section>
 
-    <section id="cards-container" class="cards">
-      <div id="price-cards"></div>
-    </section>
-
-    <section class="ai-insights">
-      <h2>💡 AI Insights</h2>
-      <ul id="insights-list"></ul>
-    </section>
+    <section id="cards-container" class="cards"></section>
 
     <section class="chart-section">
-      <h2>📈 5-Year Price Chart</h2>
+      <h2>5-Year Prices</h2>
       <canvas id="priceChart" height="150"></canvas>
     </section>
 
+    <section class="ai-insights">
+      <h2>AI Insights</h2>
+      <ul id="insights-list"></ul>
+    </section>
+
     <section class="news-section">
-      <h2>📰 Latest News & Sentiment</h2>
+      <h2>Latest News</h2>
       <ul id="news-list"></ul>
     </section>
   </main>
