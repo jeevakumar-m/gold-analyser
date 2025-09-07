@@ -1,70 +1,35 @@
-name: Update Metals & News (Free)
+name: Auto Update Metals & News
 
 on:
   schedule:
-    - cron: '0 */6 * * *'  # every 6 hours
-  workflow_dispatch:
+    - cron: '0 6 * * *'  # Runs daily at 6 AM UTC
+  workflow_dispatch:     # Manual trigger option
 
 jobs:
-  fetch:
+  update-data:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+    - name: Checkout Repository
+      uses: actions/checkout@v3
 
-      # ✅ Ensure 'data' folder exists
-      - name: Ensure data folder exists
-        run: mkdir -p data
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
 
-      - name: Install dependencies
-        run: pip install yfinance feedparser
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install yfinance feedparser
 
-      - name: Fetch metals data
-        run: |
-          python - <<'PY'
-          import yfinance as yf, json
+    - name: Fetch Metals & News Data
+      run: python fetch_data.py
 
-          metals = {}
-
-          # Fetch last 5 days prices
-          gold = yf.Ticker("GC=F").history(period="5d")['Close'].tolist()
-          silver = yf.Ticker("SI=F").history(period="5d")['Close'].tolist()
-
-          # Fetch conversion rates relative to USD
-          rates = {
-              "USD": 1.0,
-              "INR": 1 / yf.Ticker("INR=X").history(period="1d")['Close'].iloc[-1],
-              "EUR": 1 / yf.Ticker("EURUSD=X").history(period="1d")['Close'].iloc[-1],
-              "GBP": 1 / yf.Ticker("GBPUSD=X").history(period="1d")['Close'].iloc[-1],
-              "JPY": 1 / yf.Ticker("JPY=X").history(period="1d")['Close'].iloc[-1],
-          }
-
-          metals["gold"] = gold
-          metals["silver"] = silver
-          metals["rates"] = rates
-
-          # Save JSON
-          with open("data/metals.json", "w") as f:
-              json.dump(metals, f)
-          PY
-
-      - name: Fetch news headlines (Google News RSS)
-        run: |
-          python - <<'PY'
-          import feedparser, json
-
-          url = "https://news.google.com/rss/search?q=gold+OR+silver"
-          feed = feedparser.parse(url)
-          headlines = [entry.title for entry in feed.entries[:10]]
-
-          with open("data/news.json", "w") as f:
-              json.dump(headlines, f)
-          PY
-
-      - name: Commit updated data
-        run: |
-          git config user.name "github-actions"
-          git config user.email "actions@github.com"
-          git add data/metals.json data/news.json
-          git commit -m "Update metals & news [ci skip]" || echo "No changes to commit"
-          git push origin HEAD:main || echo "Push failed (permission issue?)"
+    - name: Commit and Push Changes
+      run: |
+        git config user.name "github-actions"
+        git config user.email "github-actions@github.com"
+        git add data/metals.json data/news.json
+        git commit -m "Update metals & news [ci skip]" || echo "No changes"
+        git push origin main
