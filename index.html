@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
 </head>
 <body>
   <header>
@@ -34,9 +35,7 @@
     </section>
 
     <!-- Price Cards -->
-    <section class="cards" id="price-cards">
-      <!-- JS populates Gold & Silver cards dynamically -->
-    </section>
+    <section class="cards" id="price-cards"></section>
 
     <!-- Weekly Summary -->
     <section id="weekly-summary">
@@ -50,10 +49,10 @@
       <ul id="insights-list"></ul>
     </section>
 
-    <!-- Price Chart -->
+    <!-- 5-Year Price Chart -->
     <section>
-      <h2>📈 Price Trend (Last 5 Days)</h2>
-      <canvas id="priceChart" height="150"></canvas>
+      <h2>📈 Gold & Silver Price Trend (Last 5 Years)</h2>
+      <canvas id="priceChart" height="200"></canvas>
     </section>
 
     <!-- News Sentiment -->
