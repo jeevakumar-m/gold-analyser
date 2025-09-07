@@ -9,7 +9,9 @@ async function fetchData() {
     metalsData = await fetch('data/metals.json').then(res => res.json());
     await fetchForexRates();
     renderDashboard();
-  } catch(e){ console.error("Failed to fetch data", e); }
+  } catch(e){
+    console.error("Failed to fetch data", e);
+  }
 }
 
 // Fetch latest forex rates (free, no API key)
@@ -21,24 +23,29 @@ async function fetchForexRates(){
   } catch(e){ console.error("Failed to fetch forex rates", e); }
 }
 
-// Render dashboard
-function renderDashboard(){
+// Convert price from USD to selected currency
+function convert(priceUSD) {
   const currency = currencySelect.value;
-  renderPriceCards(currency);
+  const rate = metalsData.rates[currency] || 1;
+  return (priceUSD * rate).toFixed(2);
+}
+
+// Render the full dashboard
+function renderDashboard(){
+  renderPriceCards();
   renderAIInsights();
-  renderMainChart(currency);
+  renderMainChart();
 }
 
 // ---------------- Price Cards ----------------
-function renderPriceCards(currency){
-  const rate = metalsData.rates[currency] || 1;
+function renderPriceCards(){
   const cardsContainer = document.getElementById("price-cards");
   cardsContainer.innerHTML="";
 
   ["gold","silver"].forEach(metal=>{
     const prices = metalsData[metal];
-    const latest = (prices[prices.length-1]*rate).toFixed(2);
-    const prev = (prices[prices.length-2]*rate).toFixed(2);
+    const latest = convert(prices[prices.length-1]);
+    const prev = convert(prices[prices.length-2]);
     const diff = (latest - prev).toFixed(2);
     const pct = ((diff/prev)*100).toFixed(2);
     const trend = diff>0?"positive":diff<0?"negative":"neutral";
@@ -47,17 +54,23 @@ function renderPriceCards(currency){
     card.className="card";
     card.innerHTML=`
       <h2>${metal.toUpperCase()}</h2>
-      <p class="price ${trend}">${latest} ${currency} <span class="change">${pct}%</span></p>
+      <p class="price ${trend}">${latest} ${currencySelect.value} <span class="change">${pct}%</span></p>
       <canvas id="${metal}-sparkline" height="50"></canvas>
     `;
     cardsContainer.appendChild(card);
 
-    // Sparkline
+    // Sparkline chart
     new Chart(document.getElementById(`${metal}-sparkline`), {
       type:'line',
       data:{
         labels: prices.map((_,i)=>i+1),
-        datasets:[{data:prices.map(p=> (p*rate).toFixed(2)), borderColor: trend==="positive"?"#28a745":trend==="negative"?"#dc3545":"#6c757d", fill:false, tension:0.2, pointRadius:0}]
+        datasets:[{
+          data: prices.map(p => convert(p)),
+          borderColor: trend==="positive"?"#28a745":trend==="negative"?"#dc3545":"#6c757d",
+          fill:false,
+          tension:0.2,
+          pointRadius:0
+        }]
       },
       options:{plugins:{legend:{display:false}},scales:{x:{display:false},y:{display:false}}}
     });
@@ -94,28 +107,26 @@ function correlation(x, y){
   return num/den;
 }
 
-// ---------------- Main Chart (5-Year) ----------------
-function renderMainChart(currency){
-  const rate = metalsData.rates[currency] || 1;
-  const ctx = document.getElementById("priceChart").getContext("2d");
-  if(priceChart) priceChart.destroy();
-
-  // Generate fake dates for 5-year daily prices
-  const start = new Date();
-  start.setFullYear(start.getFullYear()-5);
+// ---------------- Main 5-Year Chart ----------------
+function renderMainChart(){
   const labels = metalsData.gold.map((_,i)=>{
+    const start = new Date();
+    start.setFullYear(start.getFullYear()-5);
     const d = new Date(start);
     d.setDate(d.getDate()+i);
     return d;
   });
 
+  const ctx = document.getElementById("priceChart").getContext("2d");
+  if(priceChart) priceChart.destroy();
+
   priceChart = new Chart(ctx,{
     type:'line',
     data:{
-      labels:labels,
+      labels: labels,
       datasets:[
-        { label:'Gold', data:metalsData.gold.map(p=>(p*rate).toFixed(2)), borderColor:'#FFD700', fill:false, tension:0.2 },
-        { label:'Silver', data:metalsData.silver.map(p=>(p*rate).toFixed(2)), borderColor:'#C0C0C0', fill:false, tension:0.2 }
+        { label:'Gold', data:metalsData.gold.map(p => convert(p)), borderColor:'#FFD700', fill:false, tension:0.2 },
+        { label:'Silver', data:metalsData.silver.map(p => convert(p)), borderColor:'#C0C0C0', fill:false, tension:0.2 }
       ]
     },
     options:{
@@ -123,8 +134,13 @@ function renderMainChart(currency){
       plugins:{
         legend:{position:'top'},
         zoom:{
-          pan:{enabled:true,mode:'x'},
-          zoom:{enabled:true,mode:'x'}
+          pan: { enabled:true, mode:'x' },
+          zoom:{
+            wheel: { enabled:true },
+            pinch: { enabled:true },
+            drag: { enabled:false },
+            mode:'x'
+          }
         }
       },
       scales:{ x:{ type:'time', time:{ unit:'month' } } }
