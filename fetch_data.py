@@ -25,7 +25,7 @@ for commodity, symbol in commodities.items():
 # -------------------------
 # 2️⃣ Forex Rates for Multi-Currency Conversion
 # -------------------------
-currencies = ["INR","EUR","GBP","JPY","AUD","CAD","CHF","CNY"]
+currencies = ["INR", "EUR", "GBP", "JPY", "AUD", "CAD", "CHF", "CNY"]
 
 try:
     res = requests.get(f"https://api.exchangerate.host/latest?base=USD&symbols={','.join(currencies)}")
@@ -54,15 +54,19 @@ with open("data/metals.json", "w") as f:
 # -------------------------
 # 5️⃣ Gold & Silver News
 # -------------------------
-rss_url = "https://www.investing.com/rss/commodities-news.rss"
-feed = feedparser.parse(rss_url)
+# Alternative RSS Feed for Commodities News
+rss_url = "https://www.investing.com/news/commodities-news/8"
 
-# Keep only articles containing "gold" or "silver"
-headlines = [
-    {"title": entry.title, "link": entry.link, "summary": ""}
-    for entry in feed.entries
-    if "gold" in entry.title.lower() or "silver" in entry.title.lower()
-][:10]
+try:
+    feed = feedparser.parse(rss_url)
+    headlines = [
+        {"title": entry.title, "link": entry.link, "summary": ""}
+        for entry in feed.entries
+        if "gold" in entry.title.lower() or "silver" in entry.title.lower()
+    ][:10]
+except Exception as e:
+    print("⚠️ News fetch failed:", e)
+    headlines = []
 
 # -------------------------
 # 6️⃣ Save news.json
