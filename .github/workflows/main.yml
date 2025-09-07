@@ -12,6 +12,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      # ✅ Ensure 'data' folder exists
+      - name: Ensure data folder exists
+        run: mkdir -p data
+
       - name: Install dependencies
         run: pip install yfinance feedparser
 
