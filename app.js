@@ -119,6 +119,8 @@ async function renderNews(news) {
     `;
     ul.appendChild(li);
   }
+    injectNewsJSONLD(news);
+
 }
 
 // ====================
