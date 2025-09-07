@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Metals Analytics Dashboard (Free, Open Source)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <header>
+    <h1>📊 Metals Analytics Dashboard</h1>
+    <p class="subtitle">Gold & Silver prices, news & AI sentiment — 100% free, no keys needed</p>
+  </header>
+
+  <main>
+    <section class="controls">
+      <label for="currency">Currency: </label>
+      <select id="currency">
+        <option value="USD" selected>USD</option>
+        <option value="INR">INR</option>
+        <option value="EUR">EUR</option>
+        <option value="GBP">GBP</option>
+        <option value="JPY">JPY</option>
+      </select>
+      <button id="refresh">Refresh Data</button>
+    </section>
+
+    <section class="cards">
+      <div class="card">
+        <h2>Gold (GC=F)</h2>
+        <p id="gold-price">—</p>
+      </div>
+      <div class="card">
+        <h2>Silver (SI=F)</h2>
+        <p id="silver-price">—</p>
+      </div>
+    </section>
+
+    <section>
+      <h2>📰 Latest News & Sentiment</h2>
+      <ul id="news-list" class="news-list"></ul>
+    </section>
+
+    <section>
+      <h2>📈 Price Chart</h2>
+      <canvas id="priceChart" height="120"></canvas>
+    </section>
+
+    <footer>
+      <p>Hosted on GitHub Pages. Data auto-updated via GitHub Actions. AI runs in browser with transformers.js.</p>
+    </footer>
+  </main>
+
+  <!-- sentiment analysis in browser -->
+  <script type="module">
+    import { pipeline } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers';
+
+    window.sentimentPipeline = await pipeline("sentiment-analysis");
+    console.log("✅ Sentiment pipeline loaded");
+  </script>
+
+  <script src="app.js"></script>
+</body>
+</html>
