@@ -1,80 +1,140 @@
-body {
-  font-family: 'Inter', sans-serif;
-  background: #f4f6f8;
-  color: #333;
-  margin: 0;
-  padding: 0;
+const currencySelect = document.getElementById("currency");
+const refreshBtn = document.getElementById("refresh");
+let metalsData = null;
+let priceChart = null;
+
+// Fetch JSON data
+async function fetchData() {
+  try {
+    metalsData = await fetch('data/metals.json').then(res => res.json());
+    await fetchForexRates();
+    renderDashboard();
+  } catch(e){ console.error("Failed to fetch data", e); }
 }
 
-header {
-  background: linear-gradient(90deg, #0077b6, #00b4d8);
-  color: white;
-  text-align: center;
-  padding: 20px 10px;
+// Fetch latest forex rates (free, no API key)
+async function fetchForexRates(){
+  try{
+    const res = await fetch('https://api.exchangerate.host/latest?base=USD&symbols=INR,EUR,GBP,JPY');
+    const data = await res.json();
+    metalsData.rates = { USD:1, ...data.rates };
+  } catch(e){ console.error("Failed to fetch forex rates", e); }
 }
 
-header h1 { margin: 0; font-size: 2rem; }
-header .subtitle { margin-top: 5px; font-size: 1rem; font-weight: 300; }
-
-.controls {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 15px;
-  padding: 20px;
+// Render dashboard
+function renderDashboard(){
+  const currency = currencySelect.value;
+  renderPriceCards(currency);
+  renderAIInsights();
+  renderMainChart(currency);
 }
 
-button {
-  background-color: #0077b6;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 500;
+// ---------------- Price Cards ----------------
+function renderPriceCards(currency){
+  const rate = metalsData.rates[currency] || 1;
+  const cardsContainer = document.getElementById("price-cards");
+  cardsContainer.innerHTML="";
+
+  ["gold","silver"].forEach(metal=>{
+    const prices = metalsData[metal];
+    const latest = (prices[prices.length-1]*rate).toFixed(2);
+    const prev = (prices[prices.length-2]*rate).toFixed(2);
+    const diff = (latest - prev).toFixed(2);
+    const pct = ((diff/prev)*100).toFixed(2);
+    const trend = diff>0?"positive":diff<0?"negative":"neutral";
+
+    const card = document.createElement("div");
+    card.className="card";
+    card.innerHTML=`
+      <h2>${metal.toUpperCase()}</h2>
+      <p class="price ${trend}">${latest} ${currency} <span class="change">${pct}%</span></p>
+      <canvas id="${metal}-sparkline" height="50"></canvas>
+    `;
+    cardsContainer.appendChild(card);
+
+    // Sparkline
+    new Chart(document.getElementById(`${metal}-sparkline`), {
+      type:'line',
+      data:{
+        labels: prices.map((_,i)=>i+1),
+        datasets:[{data:prices.map(p=> (p*rate).toFixed(2)), borderColor: trend==="positive"?"#28a745":trend==="negative"?"#dc3545":"#6c757d", fill:false, tension:0.2, pointRadius:0}]
+      },
+      options:{plugins:{legend:{display:false}},scales:{x:{display:false},y:{display:false}}}
+    });
+  });
 }
 
-button:hover { background-color: #0096c7; }
+// ---------------- AI Insights ----------------
+function renderAIInsights(){
+  const insights = document.getElementById("insights-list");
+  insights.innerHTML="";
+  ["gold","silver"].forEach(metal=>{
+    const prices = metalsData[metal];
+    const trend = prices[prices.length-1]>prices[0]?"upward 🚀":prices[prices.length-1]<prices[0]?"downward 📉":"stable →";
+    const pctChange = ((prices[prices.length-1]-prices[0])/prices[0]*100).toFixed(2);
+    const li = document.createElement("li");
+    li.textContent = `${metal.toUpperCase()} 5-year change: ${pctChange}% (${trend})`;
+    insights.appendChild(li);
+  });
 
-.cards {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  flex-wrap: wrap;
-  padding: 20px;
+  // Correlation
+  const corr = correlation(metalsData.gold, metalsData.silver).toFixed(2);
+  const corrLi = document.createElement("li");
+  corrLi.textContent = `Gold & Silver correlation: ${corr}`;
+  insights.appendChild(corrLi);
 }
 
-.card {
-  background: linear-gradient(145deg, #ffffff, #e6f0ff);
-  border-radius: 15px;
-  padding: 20px;
-  width: 280px;
-  text-align: center;
-  box-shadow: 0 10px 20px rgba(0,0,0,0.12);
-  transition: transform 0.2s;
+// ---------------- Correlation ----------------
+function correlation(x, y){
+  const n=x.length;
+  const avgX=x.reduce((a,b)=>a+b,0)/n;
+  const avgY=y.reduce((a,b)=>a+b,0)/n;
+  const num = x.map((v,i)=> (v-avgX)*(y[i]-avgY)).reduce((a,b)=>a+b,0);
+  const den = Math.sqrt(x.map(v=> (v-avgX)**2).reduce((a,b)=>a+b,0) * y.map(v=> (v-avgY)**2).reduce((a,b)=>a+b,0));
+  return num/den;
 }
 
-.card:hover { transform: translateY(-5px); }
+// ---------------- Main Chart (5-Year) ----------------
+function renderMainChart(currency){
+  const rate = metalsData.rates[currency] || 1;
+  const ctx = document.getElementById("priceChart").getContext("2d");
+  if(priceChart) priceChart.destroy();
 
-.card h2, .card h3 { margin: 0; font-size: 1.2rem; }
+  // Generate fake dates for 5-year daily prices
+  const start = new Date();
+  start.setFullYear(start.getFullYear()-5);
+  const labels = metalsData.gold.map((_,i)=>{
+    const d = new Date(start);
+    d.setDate(d.getDate()+i);
+    return d;
+  });
 
-.price {
-  font-size: 1.5rem;
-  margin: 10px 0;
+  priceChart = new Chart(ctx,{
+    type:'line',
+    data:{
+      labels:labels,
+      datasets:[
+        { label:'Gold', data:metalsData.gold.map(p=>(p*rate).toFixed(2)), borderColor:'#FFD700', fill:false, tension:0.2 },
+        { label:'Silver', data:metalsData.silver.map(p=>(p*rate).toFixed(2)), borderColor:'#C0C0C0', fill:false, tension:0.2 }
+      ]
+    },
+    options:{
+      responsive:true,
+      plugins:{
+        legend:{position:'top'},
+        zoom:{
+          pan:{enabled:true,mode:'x'},
+          zoom:{enabled:true,mode:'x'}
+        }
+      },
+      scales:{ x:{ type:'time', time:{ unit:'month' } } }
+    }
+  });
 }
 
-.price.positive { color: #28a745; }
-.price.negative { color: #dc3545; }
-.price.neutral  { color: #6c757d; }
+// ---------------- Events ----------------
+currencySelect.addEventListener("change", renderDashboard);
+refreshBtn.addEventListener("click", fetchData);
 
-#ai-insights ul, #news-list, #top-insights-list { list-style: none; padding: 0; }
-
-#ai-insights li, #news-list li, #top-insights-list li {
-  background: white;
-  margin: 8px 20px;
-  padding: 12px;
-  border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-}
-
-.card canvas { margin-top: 10px; }
+// Initial load
+fetchData();
