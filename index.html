@@ -2,61 +2,86 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Metals Analytics Dashboard</title>
+  <title>Metals & Crypto Analytics Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-
-  <!-- CSS -->
+  <!-- TailwindCSS -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.3/dist/tailwind.min.css" rel="stylesheet">
+  <!-- Plotly.js -->
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <!-- Transformers.js for AI summarization -->
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@xenova/transformers"></script>
   <link rel="stylesheet" href="style.css">
-
-  <!-- Chart.js + Luxon + Zoom -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
 </head>
-<body>
-  <header>
-    <h1>📊 Metals Analytics Dashboard</h1>
-    <p>Gold & Silver prices, news, AI insights — Free & Open Source</p>
+<body class="bg-gray-50 text-gray-800">
+
+  <!-- Header -->
+  <header class="p-6 bg-white shadow">
+    <h1 class="text-3xl font-bold">📊 Metals & Crypto Dashboard</h1>
+    <p class="text-gray-600">Gold, Silver, Platinum, Palladium, Copper, Crude Oil & Crypto — Free & AI-powered</p>
   </header>
 
-  <main>
-    <section class="controls">
-      <label for="currency">Currency:</label>
-      <select id="currency">
+  <main class="p-6 space-y-6">
+
+    <!-- Controls -->
+    <section class="flex flex-wrap items-center gap-4">
+      <label for="currency" class="font-semibold">Currency:</label>
+      <select id="currency" class="border p-1 rounded">
         <option value="USD" selected>USD</option>
         <option value="INR">INR</option>
         <option value="EUR">EUR</option>
         <option value="GBP">GBP</option>
         <option value="JPY">JPY</option>
+        <option value="AUD">AUD</option>
+        <option value="CAD">CAD</option>
+        <option value="CHF">CHF</option>
+        <option value="CNY">CNY</option>
       </select>
-      <button id="refresh">Refresh</button>
+      <button id="refresh" class="bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700">Refresh Data</button>
     </section>
 
-    <!-- Correct ID for cards -->
-    <section id="cards-container" class="cards"></section>
-
-    <section class="chart-section">
-      <h2>5-Year Prices</h2>
-      <canvas id="priceChart" height="150"></canvas>
+    <!-- Price Cards -->
+    <section id="price-cards" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      <!-- Dynamically populated -->
     </section>
 
-    <section class="ai-insights">
-      <h2>AI Insights</h2>
-      <ul id="insights-list"></ul>
+    <!-- Plotly Chart -->
+    <section>
+      <h2 class="font-bold text-xl mb-2">📈 5-Year Price Chart</h2>
+      <div id="priceChart" class="bg-white shadow rounded p-2"></div>
     </section>
 
-    <section class="news-section">
-      <h2>Latest News</h2>
-      <ul id="news-list"></ul>
+    <!-- Portfolio Simulator -->
+    <section class="bg-white shadow rounded p-4">
+      <h2 class="font-bold text-xl mb-2">💰 Portfolio Simulator</h2>
+      <div class="flex flex-wrap gap-4 items-center">
+        <label>Invested Amount:</label>
+        <input type="number" id="invest-amt" class="border p-1 rounded w-32" placeholder="1000">
+        <label>Metal / Crypto:</label>
+        <select id="invest-metal" class="border p-1 rounded">
+          <option value="gold">Gold</option>
+          <option value="silver">Silver</option>
+          <option value="platinum">Platinum</option>
+          <option value="palladium">Palladium</option>
+          <option value="copper">Copper</option>
+          <option value="crude_oil">Crude Oil</option>
+          <option value="bitcoin">Bitcoin</option>
+          <option value="ethereum">Ethereum</option>
+        </select>
+        <button id="calc-portfolio" class="bg-green-600 text-white px-4 py-1 rounded hover:bg-green-700">Calculate</button>
+      </div>
+      <p id="portfolio-result" class="mt-2 font-semibold"></p>
     </section>
+
+    <!-- AI News Section -->
+    <section>
+      <h2 class="font-bold text-xl mb-2">📰 Latest Gold & Silver News</h2>
+      <ul id="news-list" class="space-y-2"></ul>
+    </section>
+
   </main>
 
-  <footer>
-    <p>Hosted on GitHub Pages | Auto-updated via GitHub Actions | Free & Open Source</p>
+  <footer class="p-4 bg-white shadow mt-6 text-center text-gray-500 text-sm">
+    Hosted on GitHub Pages | Data auto-updated daily via GitHub Actions | AI summarization in-browser
   </footer>
 
   <script type="module" src="app.js"></script>
