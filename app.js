@@ -35,6 +35,8 @@ function renderDashboard(){
   renderPriceCards();
   renderAIInsights();
   renderMainChart();
+  renderNews();
+
 }
 
 // ---------------- Price Cards ----------------
@@ -90,12 +92,35 @@ function renderAIInsights(){
     insights.appendChild(li);
   });
 
+  async function renderNews(){
+  const newsContainer = document.getElementById("news-list");
+  newsContainer.innerHTML="";
+
+  if(!metalsData.news) return;
+
+  for(const item of metalsData.news){
+    const li = document.createElement("li");
+
+    // Simple sentiment emoji based on title keywords
+    let sentiment="➡️";
+    if(/rise|gain|bull/i.test(item.title)) sentiment="📈";
+    if(/fall|drop|bear/i.test(item.title)) sentiment="📉";
+
+    li.innerHTML = `${sentiment} <a href="${item.link}" target="_blank">${item.title}</a>`;
+    newsContainer.appendChild(li);
+  }
+}
+
+
   // Correlation
   const corr = correlation(metalsData.gold, metalsData.silver).toFixed(2);
   const corrLi = document.createElement("li");
   corrLi.textContent = `Gold & Silver correlation: ${corr}`;
   insights.appendChild(corrLi);
 }
+
+
+
 
 // ---------------- Correlation ----------------
 function correlation(x, y){
