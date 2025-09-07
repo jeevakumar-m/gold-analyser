@@ -1,23 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Metals Analytics Dashboard</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Chart.js + Luxon + Zoom -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
+
 </head>
 <body>
   <header>
     <h1>📊 Metals Analytics Dashboard</h1>
-    <p class="subtitle">Gold & Silver prices, AI insights, trends, multi-currency & news</p>
+    <p class="subtitle">Gold & Silver prices, 5-year trends, AI insights & news — 100% free</p>
   </header>
 
   <main>
-    <!-- Controls -->
     <section class="controls">
-      <label for="currency">Currency: </label>
+      <label for="currency">Currency:</label>
       <select id="currency">
         <option value="USD" selected>USD</option>
         <option value="INR">INR</option>
@@ -28,51 +37,30 @@
       <button id="refresh">Refresh Data</button>
     </section>
 
-    <!-- Top AI Insights -->
-    <section id="top-insights">
-      <h2>🌟 Top AI Insights</h2>
-      <ul id="top-insights-list"></ul>
+    <section id="cards-container" class="cards">
+      <div id="price-cards"></div>
     </section>
 
-    <!-- Price Cards -->
-    <section class="cards" id="price-cards"></section>
-
-    <!-- Weekly Summary -->
-    <section id="weekly-summary">
-      <h2>📅 Weekly Summary</h2>
-      <div class="cards" id="weekly-cards"></div>
-    </section>
-
-    <!-- AI Insights -->
-    <section id="ai-insights">
-      <h2>🤖 AI Insights</h2>
+    <section class="ai-insights">
+      <h2>💡 AI Insights</h2>
       <ul id="insights-list"></ul>
     </section>
 
-    <!-- 5-Year Price Chart -->
-    <section>
-      <h2>📈 Gold & Silver Price Trend (Last 5 Years)</h2>
-      <canvas id="priceChart" height="200"></canvas>
+    <section class="chart-section">
+      <h2>📈 5-Year Price Chart</h2>
+      <canvas id="priceChart" height="150"></canvas>
     </section>
 
-    <!-- News Sentiment -->
-    <section id="news-section">
+    <section class="news-section">
       <h2>📰 Latest News & Sentiment</h2>
       <ul id="news-list"></ul>
     </section>
   </main>
 
   <footer>
-    <p>Hosted on GitHub Pages. Data auto-updated via GitHub Actions. AI insights run in-browser.</p>
+    <p>Hosted on GitHub Pages | Auto-updated via GitHub Actions | Free & Open Source</p>
   </footer>
 
-  <!-- Browser AI -->
-  <script type="module">
-    import { pipeline } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers';
-    window.sentimentPipeline = await pipeline("sentiment-analysis");
-    console.log("✅ Sentiment AI loaded");
-  </script>
-
-  <script src="app.js"></script>
+  <script type="module" src="app.js"></script>
 </body>
 </html>
