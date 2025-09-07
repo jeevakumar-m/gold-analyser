@@ -1,19 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Metals Analytics Dashboard (Free, Open Source)</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <title>Metals Analytics Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <header>
     <h1>📊 Metals Analytics Dashboard</h1>
-    <p class="subtitle">Gold & Silver prices, news & AI sentiment — 100% free, no keys needed</p>
+    <p class="subtitle">Gold & Silver prices, AI insights, trends, multi-currency & news</p>
   </header>
 
   <main>
+    <!-- Controls -->
     <section class="controls">
       <label for="currency">Currency: </label>
       <select id="currency">
@@ -26,38 +27,39 @@
       <button id="refresh">Refresh Data</button>
     </section>
 
-    <section class="cards">
-      <div class="card">
-        <h2>Gold (GC=F)</h2>
-        <p id="gold-price">—</p>
-      </div>
-      <div class="card">
-        <h2>Silver (SI=F)</h2>
-        <p id="silver-price">—</p>
-      </div>
+    <!-- Price Cards -->
+    <section class="cards" id="price-cards">
+      <!-- JS will populate Gold & Silver cards dynamically -->
     </section>
 
+    <!-- Analytics Insights -->
+    <section id="ai-insights">
+      <h2>🤖 AI Insights</h2>
+      <ul id="insights-list"></ul>
+    </section>
+
+    <!-- Price Chart -->
     <section>
+      <h2>📈 Price Trend (Last 5 Days)</h2>
+      <canvas id="priceChart" height="150"></canvas>
+    </section>
+
+    <!-- News Sentiment -->
+    <section id="news-section">
       <h2>📰 Latest News & Sentiment</h2>
-      <ul id="news-list" class="news-list"></ul>
+      <ul id="news-list"></ul>
     </section>
-
-    <section>
-      <h2>📈 Price Chart</h2>
-      <canvas id="priceChart" height="120"></canvas>
-    </section>
-
-    <footer>
-      <p>Hosted on GitHub Pages. Data auto-updated via GitHub Actions. AI runs in browser with transformers.js.</p>
-    </footer>
   </main>
 
-  <!-- sentiment analysis in browser -->
+  <footer>
+    <p>Hosted on GitHub Pages. Data auto-updated via GitHub Actions. AI insights run in-browser.</p>
+  </footer>
+
+  <!-- Browser AI -->
   <script type="module">
     import { pipeline } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers';
-
     window.sentimentPipeline = await pipeline("sentiment-analysis");
-    console.log("✅ Sentiment pipeline loaded");
+    console.log("✅ Sentiment AI loaded");
   </script>
 
   <script src="app.js"></script>
